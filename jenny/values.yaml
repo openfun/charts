@@ -26,17 +26,14 @@ service:
 
 ingress:
   enabled: true
-  ingressClassName: ""
-  hostname: ""
-  annotations: {}
+  class_name: "nginx"
 
 persistence:
   enabled: true
-  storageClass: "local-storage"
+  storageClass: "local-path"
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   size: 2Gi
-  existingClaim: ""
 
 affinity:
   podAntiAffinity:
@@ -63,13 +60,6 @@ nodeSelector: {}
 tolerations: []
 
 resources: {}
-
-envFromSecret: 'jenny-env'
-envSecrets: {}
-existingSecret: false
-
-executionEnvironment: "production"
-sentryIgnoreHealthChecks: true
 
 volumes:
   static:
@@ -98,5 +88,3 @@ django:
     port: "5432"
   do_migrate: true
   do_collect_static: true
-
-cronjobs: []

@@ -14,7 +14,7 @@ metadata:
     {{- toYaml .Values.commonAnnotations | nindent 4 }}
     {{- end }}
 spec:
-  ingressClassName: nginx
+  ingressClassName: {{ .Values.ingress.class_name }}
   rules:
     - http:
         paths:
