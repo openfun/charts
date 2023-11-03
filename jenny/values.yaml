@@ -1,0 +1,102 @@
+# Jenny Chart default values
+
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: 49705lm8.c1.gra9.container-registry.ovh.net/jenny/jenny
+  pullPolicy: Always
+  tag: "production-latest"
+  dockerconfigjson: ""  # cf https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+replicaCount: 1
+
+imagePullSecrets: ["regcred"]
+
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+
+podAnnotations: {}
+
+service:
+  port: 8080
+  type: NodePort
+  nodePort:
+    http: 30080
+
+ingress:
+  enabled: true
+  ingressClassName: ""
+  hostname: ""
+  annotations: {}
+
+persistence:
+  enabled: true
+  storageClass: "local-storage"
+  accessModes:
+    - ReadWriteMany
+  size: 2Gi
+  existingClaim: ""
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: deployment
+                operator: In
+                values:
+                  - "jenny-app"
+          topologyKey: kubernetes.io/hostname
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+resources: {}
+
+envFromSecret: 'jenny-env'
+envSecrets: {}
+existingSecret: false
+
+executionEnvironment: "production"
+sentryIgnoreHealthChecks: true
+
+volumes:
+  static:
+    name: "jenny-static"
+    claimName: "jenny-static-pvc"
+  media:
+    name: "jenny-media"
+    claimName: "jenny-media-pvc"
+
+django:
+  fullname: jenny
+  port: 8080
+  command:
+    - uwsgi
+    - "--http=:8080"
+    - "--module=jenny.wsgi"
+  settings: "jenny.settings"
+  configuration: "Base"
+  secret_key: "Qdk2/KO0b2hWPbs+hScNXWA+FbctRzkop/p2bYWuP+w="
+  allowed_hosts: "*"
+  db:
+    name: "jenny"
+    user: "jenny"
+    password: "jenny"
+    host: "192.168.1.41"
+    port: "5432"
+  do_migrate: true
+  do_collect_static: true
+
+cronjobs: []

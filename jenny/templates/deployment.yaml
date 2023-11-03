@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "jenny.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "jenny.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "jenny.selectorLabels" . | nindent 6 }}
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "jenny.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- include "django.imagePullSecrets" . | nindent 6 }}
+      securityContext:
+        {{- toYaml .Values.securityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            {{- toYaml .Values.django.command | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /admin/login/
+              port: {{ .Values.django.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /admin/login/
+              port: {{ .Values.django.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          {{- include "jenny.envs" . | nindent 10 }}
+          volumeMounts:
+            - name: {{ .Values.volumes.static.name }}
+              mountPath: /app/static
+            - name: {{ .Values.volumes.media.name }}
+              mountPath: /app/media
+      volumes:
+        - name: {{ .Values.volumes.static.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.volumes.static.claimName }}
+        - name: {{ .Values.volumes.media.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.volumes.media.claimName }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
