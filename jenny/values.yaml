@@ -65,9 +65,11 @@ volumes:
   static:
     name: "jenny-static"
     claimName: "jenny-static-pvc"
+    mountPath: "/app/static"
   media:
     name: "jenny-media"
     claimName: "jenny-media-pvc"
+    mountPath: "/app/media"
 
 django:
   fullname: jenny
