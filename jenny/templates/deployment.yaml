@@ -48,9 +48,9 @@ spec:
           {{- if .Values.persistence.enabled }}
           volumeMounts:
             - name: {{ .Values.volumes.static.name }}
-              mountPath: /app/static
+              mountPath: {{ .Values.volumes.static.mountPath }}
             - name: {{ .Values.volumes.media.name }}
-              mountPath: /app/media
+              mountPath: {{ .Values.volumes.media.mountPath }}
       volumes:
         - name: {{ .Values.volumes.static.name }}
           persistentVolumeClaim:
