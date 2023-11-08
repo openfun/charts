@@ -45,6 +45,7 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 5
           {{- include "jenny.envs" . | nindent 10 }}
+          {{- if .Values.persistence.enabled }}
           volumeMounts:
             - name: {{ .Values.volumes.static.name }}
               mountPath: /app/static
@@ -57,6 +58,7 @@ spec:
         - name: {{ .Values.volumes.media.name }}
           persistentVolumeClaim:
             claimName: {{ .Values.volumes.media.claimName }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
