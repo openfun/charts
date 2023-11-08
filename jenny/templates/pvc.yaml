@@ -3,7 +3,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Values.volumes.media.claimName }}
-  namespace: default
+  namespace: {{ .Release.Namespace | quote }}
 spec:
   accessModes:
   {{ with .Values.persistence.accessModes }}
@@ -18,7 +18,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Values.volumes.static.claimName }}
-  namespace: default
+  namespace: {{ .Release.Namespace | quote }}
 spec:
   accessModes:
   {{ with .Values.persistence.accessModes }}
