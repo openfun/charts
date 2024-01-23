@@ -53,25 +53,30 @@ service: app
 {{- end }}
 
 {{- define "jenny.envs" -}}
-env:
-  - name: "DJANGO_SETTINGS_MODULE"
-    value: "{{ .Values.django.settings }}"
-  - name: "DJANGO_CONFIGURATION"
-    value: "{{ .Values.django.configuration }}"
-  - name: "DJANGO_SECRET_KEY"
-    value: "{{ .Values.django.secret_key }}"
-  - name: "DJANGO_ALLOWED_HOSTS"
-    value: "{{ .Values.django.allowed_hosts }}"
-  - name: "DB_NAME"
-    value: "{{ .Values.django.db.name }}"
-  - name: "DB_USER"
-    value: "{{ .Values.django.db.user }}"
-  - name: "DB_PASSWORD"
-    value: "{{ .Values.django.db.password }}"
-  - name: "DB_HOST"
-    value: "{{ .Values.django.db.host }}"
-  - name: "DB_PORT"
-    value: "{{ .Values.django.db.port }}"
+- name: "DJANGO_SETTINGS_MODULE"
+  value: "{{ .Values.django.settings }}"
+- name: "DJANGO_CONFIGURATION"
+  value: "{{ .Values.django.configuration }}"
+- name: "DJANGO_SECRET_KEY"
+  valueFrom:
+    secretKeyRef:
+      name: jenny-secrets
+      key: DJANGO_SECRET_KEY
+- name: "DJANGO_ALLOWED_HOSTS"
+  value: "{{ .Values.django.allowed_hosts }}"
+- name: "DB_NAME"
+  value: "{{ .Values.django.db.name }}"
+- name: "DB_USER"
+  value: "{{ .Values.django.db.user }}"
+- name: "DB_PASSWORD"
+  valueFrom:
+    secretKeyRef:
+      name: jenny-secrets
+      key: DB_PASSWORD
+- name: "DB_HOST"
+  value: "{{ .Values.django.db.host }}"
+- name: "DB_PORT"
+  value: "{{ .Values.django.db.port }}"
 {{- end }}
 
 {{- define "django.imagePullSecrets" -}}

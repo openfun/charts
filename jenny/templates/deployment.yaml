@@ -34,17 +34,18 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           livenessProbe:
             httpGet:
-              path: /admin/login/
+              path: /__lbheartbeat__
               port: {{ .Values.django.port }}
             initialDelaySeconds: 15
             periodSeconds: 30
           readinessProbe:
             httpGet:
-              path: /admin/login/
+              path: /__heartbeat__
               port: {{ .Values.django.port }}
             initialDelaySeconds: 5
             periodSeconds: 5
-          {{- include "jenny.envs" . | nindent 10 }}
+          env:
+            {{- include "jenny.envs" . | nindent 12 }}
           {{- if .Values.persistence.enabled }}
           volumeMounts:
             - name: {{ .Values.volumes.static.name }}

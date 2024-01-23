@@ -7,7 +7,7 @@ image:
   repository: 49705lm8.c1.gra9.container-registry.ovh.net/jenny/jenny
   pullPolicy: Always
   tag: "production-latest"
-  dockerconfigjson: ""  # cf https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+
 replicaCount: 1
 
 imagePullSecrets: ["regcred"]
@@ -80,13 +80,14 @@ django:
     - "--module=jenny.wsgi"
   settings: "jenny.settings"
   configuration: "Base"
-  secret_key: "Qdk2/KO0b2hWPbs+hScNXWA+FbctRzkop/p2bYWuP+w="
   allowed_hosts: "*"
   db:
     name: "jenny"
     user: "jenny"
-    password: "jenny"
     host: "192.168.1.41"
     port: "5432"
-  do_migrate: true
-  do_collect_static: true
+  jobs:
+    - name: dbmigrate
+      command: ["python", "manage.py", "migrate", "--no-input"]
+    - name: collectstatic
+      command: ["python", "manage.py", "collectstatic", "--no-input"]
