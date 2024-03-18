@@ -13,6 +13,9 @@ metadata:
     {{- if .Values.commonAnnotations }}
     {{- toYaml .Values.commonAnnotations | nindent 4 }}
     {{- end }}
+    {{- if .Values.ingress.annotations }}
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+    {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.class_name }}
   rules:

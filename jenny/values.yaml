@@ -27,6 +27,7 @@ service:
 ingress:
   enabled: true
   class_name: "nginx"
+  annotations: {}
 
 persistence:
   enabled: true
