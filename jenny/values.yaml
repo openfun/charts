@@ -28,6 +28,9 @@ ingress:
   enabled: true
   class_name: "nginx"
   annotations: {}
+  tls:
+    enable: false
+    certificateSecretName: jenny-certificate
 
 persistence:
   enabled: true
