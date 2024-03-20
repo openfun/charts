@@ -77,6 +77,13 @@ service: app
   value: "{{ .Values.django.db.host }}"
 - name: "DB_PORT"
   value: "{{ .Values.django.db.port }}"
+{{- range $key, $val := .Values.env.secret }}
+- name: {{ $val.envName }}
+  valueFrom:
+    secretKeyRef:
+      name: {{ $val.secretName }}
+      key: {{ $val.keyName }}
+{{- end }}
 {{- end }}
 
 {{- define "django.imagePullSecrets" -}}
