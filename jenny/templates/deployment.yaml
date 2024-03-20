@@ -1,7 +1,8 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "jenny.fullname" . }}
+  name: "{{ template "jenny.fullname" . }}"
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "jenny.labels" . | nindent 4 }}
@@ -22,41 +23,75 @@ spec:
         {{- include "jenny.selectorLabels" . | nindent 8 }}
     spec:
       {{- include "django.imagePullSecrets" . | nindent 6 }}
-      containers:
-        - name: {{ .Chart.Name }}
+      initContainers:
+        - name: "{{ .Chart.Name }}-collectstatic"
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
-            {{- toYaml .Values.django.command | nindent 12 }}
+            - "python"
+            - "manage.py"
+            - "collectstatic"
+            - "--no-input"
+          volumeMounts:
+            - name: "static"
+              mountPath: /app/static
+      containers:
+        - name: "{{ .Chart.Name }}-django"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           livenessProbe:
             httpGet:
-              path: /__lbheartbeat__
+              path: /
               port: {{ .Values.django.port }}
+              httpHeaders:
+                - name: "Host"
+                  value: "{{ .Values.ingress.host}}"
             initialDelaySeconds: 15
             periodSeconds: 30
           readinessProbe:
             httpGet:
-              path: /__heartbeat__
+              path: /
               port: {{ .Values.django.port }}
+              httpHeaders:
+                - name: "Host"
+                  value: "{{ .Values.ingress.host}}"
             initialDelaySeconds: 5
             periodSeconds: 5
           env:
             {{- include "jenny.envs" . | nindent 12 }}
+            - name: "UWSGI_PORT"
+              value: "{{ .Values.django.port }}"
           {{- if .Values.persistence.enabled }}
           volumeMounts:
-            - name: {{ .Values.volumes.static.name }}
-              mountPath: {{ .Values.volumes.static.mountPath }}
+            - name: static
+              mountPath: /app/static
             - name: {{ .Values.volumes.media.name }}
               mountPath: {{ .Values.volumes.media.mountPath }}
+        - name: "{{ .Chart.Name }}-nginx"
+          image: nginx:1.25.4-alpine
+          volumeMounts:
+            - name: "static"
+              mountPath: /usr/share/nginx/static
+            - name: {{ .Values.volumes.media.name }}
+              mountPath: /usr/share/nginx/media
+            - name: nginx
+              mountPath: /etc/nginx
+              readOnly: true
       volumes:
-        - name: {{ .Values.volumes.static.name }}
-          persistentVolumeClaim:
-            claimName: {{ .Values.volumes.static.claimName }}
         - name: {{ .Values.volumes.media.name }}
           persistentVolumeClaim:
             claimName: {{ .Values.volumes.media.claimName }}
+        - name: nginx
+          configMap:
+            items:
+              - key: config
+                path: nginx.conf
+            name: "{{ .Chart.Name }}-nginx"
+        - name: "static"
+          emptyDir:
+            sizeLimit: 50Mi
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
