@@ -12,9 +12,6 @@ replicaCount: 1
 
 imagePullSecrets: ["regcred"]
 
-securityContext:
-  runAsUser: 1000
-  runAsGroup: 1000
 
 podAnnotations: {}
 

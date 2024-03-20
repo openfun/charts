@@ -22,8 +22,6 @@ spec:
         {{- include "jenny.selectorLabels" . | nindent 8 }}
     spec:
       {{- include "django.imagePullSecrets" . | nindent 6 }}
-      securityContext:
-        {{- toYaml .Values.securityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
