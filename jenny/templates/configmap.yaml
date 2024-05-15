@@ -39,6 +39,19 @@ data:
             }
         }
 
+        server {
+          listen 5000;
+          server_name localhost;
+
+          location /__status__ {
+            stub_status;
+            allow 127.0.0.1;
+            deny all;
+            access_log off;
+          }
+
+        }
+
         types {
           text/html                             html htm shtml;
           text/css                              css;

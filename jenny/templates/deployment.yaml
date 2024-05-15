@@ -43,7 +43,7 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           livenessProbe:
             httpGet:
-              path: /
+              path: /__heartbeat__
               port: {{ .Values.django.port }}
               httpHeaders:
                 - name: "Host"
@@ -52,13 +52,23 @@ spec:
             periodSeconds: 30
           readinessProbe:
             httpGet:
-              path: /
+              path: /__lbheartbeat__
               port: {{ .Values.django.port }}
               httpHeaders:
                 - name: "Host"
                   value: "{{ .Values.ingress.host}}"
             initialDelaySeconds: 5
             periodSeconds: 5
+          startupProbe:
+            exec:
+              command:
+                - python3
+                - manage.py
+                - migrate
+                - --check
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 30
           env:
             {{- include "jenny.envs" . | nindent 12 }}
             - name: "UWSGI_PORT"
@@ -79,6 +89,12 @@ spec:
             - name: nginx
               mountPath: /etc/nginx
               readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /__status__
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 30
       volumes:
         - name: {{ .Values.volumes.media.name }}
           persistentVolumeClaim:
