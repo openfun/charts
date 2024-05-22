@@ -83,3 +83,6 @@ django:
 
 nginx:
   port: 8000
+
+env:
+  secret: []
