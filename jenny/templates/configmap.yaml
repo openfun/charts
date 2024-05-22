@@ -45,8 +45,6 @@ data:
 
           location /__status__ {
             stub_status;
-            allow 127.0.0.1;
-            deny all;
             access_log off;
           }
 
