@@ -13,10 +13,20 @@ metadata:
     {{- if .Values.commonAnnotations }}
     {{- toYaml .Values.commonAnnotations | nindent 4 }}
     {{- end }}
+    {{- if .Values.ingress.annotations }}
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+    {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.class_name }}
+  {{- if $.Values.ingress.tls.enabled }}
+  tls:
+  - hosts:
+      - {{ $.Values.ingress.host }}
+    secretName: {{ $.Values.ingress.tls.certificateSecretName }}
+  {{- end }}
   rules:
-    - http:
+    - host: {{ .Values.ingress.host }}
+      http:
         paths:
           - path: /
             pathType: Prefix
@@ -24,5 +34,5 @@ spec:
               service:
                 name: {{ include "jenny.fullname" . }}-service
                 port:
-                  number: {{ .Values.service.port }}
+                  number: {{ .Values.nginx.port }}
 {{- end }}

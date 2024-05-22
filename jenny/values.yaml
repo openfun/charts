@@ -10,11 +10,7 @@ image:
 
 replicaCount: 1
 
-imagePullSecrets: ["regcred"]
-
-securityContext:
-  runAsUser: 1000
-  runAsGroup: 1000
+imagePullSecrets: []
 
 podAnnotations: {}
 
@@ -27,6 +23,10 @@ service:
 ingress:
   enabled: true
   class_name: "nginx"
+  annotations: {}
+  tls:
+    enabled: false
+    certificateSecretName: jenny-certificate
 
 persistence:
   enabled: true
@@ -59,13 +59,7 @@ nodeSelector: {}
 
 tolerations: []
 
-resources: {}
-
 volumes:
-  static:
-    name: "jenny-static"
-    claimName: "jenny-static-pvc"
-    mountPath: "/app/static"
   media:
     name: "jenny-media"
     claimName: "jenny-media-pvc"
@@ -74,10 +68,6 @@ volumes:
 django:
   fullname: jenny
   port: 8080
-  command:
-    - uwsgi
-    - "--http=:8080"
-    - "--module=jenny.wsgi"
   settings: "jenny.settings"
   configuration: "Base"
   allowed_hosts: "*"
@@ -89,5 +79,10 @@ django:
   jobs:
     - name: dbmigrate
       command: ["python", "manage.py", "migrate", "--no-input"]
-    - name: collectstatic
-      command: ["python", "manage.py", "collectstatic", "--no-input"]
+  resources: {}
+
+nginx:
+  port: 8000
+
+env:
+  secret: []
