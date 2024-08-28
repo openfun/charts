@@ -40,7 +40,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.django.resources | nindent 12 }}
           livenessProbe:
             httpGet:
               path: /__heartbeat__
@@ -81,6 +81,8 @@ spec:
               mountPath: {{ .Values.volumes.media.mountPath }}
         - name: "{{ .Chart.Name }}-nginx"
           image: nginx:1.25.4-alpine
+          resources:
+            {{- toYaml .Values.nginx.resources | nindent 12 }}
           volumeMounts:
             - name: "static"
               mountPath: /usr/share/nginx/static

@@ -79,10 +79,23 @@ django:
   jobs:
     - name: dbmigrate
       command: ["python", "manage.py", "migrate", "--no-input"]
-  resources: {}
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "250m"
+    limits:
+      memory: "256Mi"
+      cpu: "500m"
 
 nginx:
   port: 8000
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "250m"
+    limits:
+      memory: "256Mi"
+      cpu: "500m"
 
 env:
   secret: []
