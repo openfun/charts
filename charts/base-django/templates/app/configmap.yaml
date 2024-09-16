@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "django.fullname" . }}-dotenv
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "django.labels" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{ toYaml .Values.commonLabels | nindent 4 }}
+    {{- end }}
+    app.kubernetes.io/component: django
+  annotations:
+{{- if .Values.commonAnnotations }}
+{{- toYaml .Values.commonAnnotations | nindent 4 }}
+{{- end }}
+    "helm.sh/hook": pre-upgrade, pre-install
+    "helm.sh/hook-weight": "0"
+data:
+  DJANGO_SILENCED_SYSTEM_CHECKS: "security.W008,security.W004"
+  {{- if .Values.djangoAppEnvVars }}
+  {{- toYaml .Values.djangoAppEnvVars | nindent 2 }}
+  {{- end }}
+

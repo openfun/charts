@@ -1,0 +1,84 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "django.fullname" . }}-ingress
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "django.labels" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{ toYaml .Values.commonLabels | nindent 4 }}
+    {{- end }}
+    app.kubernetes.io/component: django
+  annotations:
+{{- if .Values.commonAnnotations }}
+{{- toYaml .Values.commonAnnotations | nindent 4 }}
+{{- end }}
+{{- if .Values.ingress.acmeIssuerName }}
+    cert-manager.io/issuer: {{ .Values.ingress.acmeIssuerName }}
+{{- end }}
+{{- if .Values.ingress.activateHttpBasicAuth }}
+    nginx.ingress.kubernetes.io/auth-type: basic 
+    nginx.ingress.kubernetes.io/auth-secret: {{ .Values.ingress.htpasswdSecretName }}
+    nginx.ingress.kubernetes.io/auth-realm: {{ .Values.ingress.httpBasicAuthMessage }}
+{{- end }}
+{{- if  and .Values.ingress.activateHttpBasicAuth .Values.ingress.bypassHtaccessIpWhitelist }}
+    nginx.ingress.kubernetes.io/satisfy: "any"
+    nginx.ingress.kubernetes.io/whitelist-source-range: {{ join "," .Values.ingress.bypassHtaccessIpWhitelist }}
+{{- end }}
+    nginx.ingress.kubernetes.io/configuration-snippet: | 
+      {{ .Values.ingress.nginxConfigurationSnippet | nindent 6 }}
+    nginx.ingress.kubernetes.io/server-snippet: | 
+      {{ .Values.ingress.nginxServerSnippet | nindent 6 }}
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: {{ include "django.host" . | quote }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.ingress.service }}
+            port:
+              number: {{ .Values.ingress.port }}
+  tls:
+    - hosts:
+      - {{ include "django.host" .  }}
+      secretName: {{ .Values.ingress.tlsSecretName }}
+---
+{{ if .Values.ingress.adminIpWhitelist }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "django.fullname" . }}-ingress-admin
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "django.labels" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{ toYaml .Values.commonLabels | nindent 4 }}
+    {{- end }}
+    app.kubernetes.io/component: django
+  annotations:
+{{- if .Values.ingress.acmeIssuerName -}}
+    cert-manager.io/issuer: {{ .Values.ingress.acmeIssuerName }}
+{{ end }}
+    nginx.ingress.kubernetes.io/whitelist-source-range: {{ join "," .Values.ingress.adminIpWhitelist }}
+    nginx.ingress.kubernetes.io/server-snippet: | 
+      {{ .Values.ingress.nginxServerSnippet | nindent 6 }}
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: {{ include "django.host" . | quote }}
+    http:
+      paths:
+      - path: /admin
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.ingress.service }}
+            port:
+              number: {{ .Values.service.port }}
+  tls:
+    - hosts:
+      - {{ include "django.host" .  }}
+      secretName: {{ .Values.ingress.tlsSecretName }}
+{{ end }}
