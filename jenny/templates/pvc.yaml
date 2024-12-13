@@ -4,21 +4,11 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ .Values.volumes.media.claimName }}
   namespace: {{ .Release.Namespace | quote }}
-spec:
-  accessModes:
-  {{ with .Values.persistence.accessModes }}
-    {{- toYaml . | indent 4 }}
-  {{- end }}
-  storageClassName: {{ .Values.persistence.storageClass }}
-  resources:
-    requests:
-      storage: {{ .Values.persistence.size }}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ .Values.volumes.static.claimName }}
-  namespace: {{ .Release.Namespace | quote }}
+  labels: 
+    {{- include "jenny.labels" $ | nindent 4 }}
+    {{- if $.Values.commonLabels }}
+    {{ toYaml $.Values.commonLabels | nindent 4 }}
+    {{- end }}
 spec:
   accessModes:
   {{ with .Values.persistence.accessModes }}

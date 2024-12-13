@@ -35,22 +35,25 @@ Common labels
 */}}
 {{- define "jenny.labels" -}}
 helm.sh/chart: {{ include "jenny.chart" . }}
-{{ include "jenny.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/part-of: {{ .Chart.Name }}
 {{- end }}
 
 {{/*
 Selector labels
 */}}
 {{- define "jenny.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "jenny.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-app: jenny
-service: app
+app.kubernetes.io/part-of: {{ .Chart.Name }}
 {{- end }}
+
+{{- define "jenny.djangoSelectorLabels" -}}
+app.kubernetes.io/name: django
+app.kubernetes.io/component: backend
+{{- end -}}
 
 {{- define "jenny.envs" -}}
 - name: "DJANGO_SETTINGS_MODULE"
@@ -77,6 +80,13 @@ service: app
   value: "{{ .Values.django.db.host }}"
 - name: "DB_PORT"
   value: "{{ .Values.django.db.port }}"
+{{- range $key, $val := .Values.env.secret }}
+- name: {{ $val.envName }}
+  valueFrom:
+    secretKeyRef:
+      name: {{ $val.secretName }}
+      key: {{ $val.keyName }}
+{{- end }}
 {{- end }}
 
 {{- define "django.imagePullSecrets" -}}
@@ -85,6 +95,6 @@ service: app
 imagePullSecrets:
 {{- range $pullSecrets }}
 - name: {{ . }}
-{{ end }}
+{{- end }}
 {{- end -}}
 {{- end }}

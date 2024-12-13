@@ -3,6 +3,9 @@
 nameOverride: ""
 fullnameOverride: ""
 
+commonLabels: {}
+commonAnnotations: {}
+
 image:
   repository: 49705lm8.c1.gra9.container-registry.ovh.net/jenny/jenny
   pullPolicy: Always
@@ -10,16 +13,11 @@ image:
 
 replicaCount: 1
 
-imagePullSecrets: ["regcred"]
-
-securityContext:
-  runAsUser: 1000
-  runAsGroup: 1000
+imagePullSecrets: []
 
 podAnnotations: {}
 
 service:
-  port: 8080
   type: NodePort
   nodePort:
     http: 30080
@@ -27,6 +25,11 @@ service:
 ingress:
   enabled: true
   class_name: "nginx"
+  annotations: {}
+  tls:
+    enabled: true
+    certificateSecretName: jenny-certificate
+  host: yolo
 
 persistence:
   enabled: true
@@ -59,13 +62,7 @@ nodeSelector: {}
 
 tolerations: []
 
-resources: {}
-
 volumes:
-  static:
-    name: "jenny-static"
-    claimName: "jenny-static-pvc"
-    mountPath: "/app/static"
   media:
     name: "jenny-media"
     claimName: "jenny-media-pvc"
@@ -74,10 +71,6 @@ volumes:
 django:
   fullname: jenny
   port: 8080
-  command:
-    - uwsgi
-    - "--http=:8080"
-    - "--module=jenny.wsgi"
   settings: "jenny.settings"
   configuration: "Base"
   allowed_hosts: "*"
@@ -89,5 +82,23 @@ django:
   jobs:
     - name: dbmigrate
       command: ["python", "manage.py", "migrate", "--no-input"]
-    - name: collectstatic
-      command: ["python", "manage.py", "collectstatic", "--no-input"]
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "250m"
+    limits:
+      memory: "256Mi"
+      cpu: "500m"
+
+nginx:
+  port: 8000
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "250m"
+    limits:
+      memory: "256Mi"
+      cpu: "500m"
+
+env:
+  secret: []
