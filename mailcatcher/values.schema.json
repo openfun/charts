@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "required": [
+    "image"
+  ],
+  "properties": {
+    "image": {
+      "type": "object",
+      "required": [
+        "repository",
+        "pullPolicy"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "pattern": "^[a-z0-9-_/]+$"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "pattern": "^(Always|Never|IfNotPresent)$"
+        }
+      }
+     },
+     "service": {
+      "type": "object",
+       "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+            "pattern": "^(ClusterIP)$"
+          }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "className",
+        "annotations",
+        "tls"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "className": {
+          "type": "string"
+        },
+        "annotations": {
+          "type": "object"
+        },
+        "tls": {
+          "type": "object",
+          "required": [
+            "enable"
+          ],
+          "properties": {
+            "enable": {
+              "type": "boolean"
+            },
+            "certificateSecretName": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+  
