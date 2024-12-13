@@ -4,6 +4,11 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ .Values.volumes.media.claimName }}
   namespace: {{ .Release.Namespace | quote }}
+  labels: 
+    {{- include "jenny.labels" $ | nindent 4 }}
+    {{- if $.Values.commonLabels }}
+    {{ toYaml $.Values.commonLabels | nindent 4 }}
+    {{- end }}
 spec:
   accessModes:
   {{ with .Values.persistence.accessModes }}

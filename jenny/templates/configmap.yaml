@@ -2,6 +2,12 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: "{{ template "jenny.fullname" . }}-nginx"
+  labels:
+    {{- include "jenny.labels" . | nindent 4 }}
+    {{- include "jenny.djangoSelectorLabels" . | nindent 4 -}}
+    {{- if .Values.commonLabels }}
+    {{ toYaml .Values.commonLabels | nindent 4 }}
+    {{- end }}
 data:
   config: |
     # nginx.conf

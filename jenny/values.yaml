@@ -3,6 +3,9 @@
 nameOverride: ""
 fullnameOverride: ""
 
+commonLabels: {}
+commonAnnotations: {}
+
 image:
   repository: 49705lm8.c1.gra9.container-registry.ovh.net/jenny/jenny
   pullPolicy: Always
@@ -15,7 +18,6 @@ imagePullSecrets: []
 podAnnotations: {}
 
 service:
-  port: 8080
   type: NodePort
   nodePort:
     http: 30080
@@ -25,8 +27,9 @@ ingress:
   class_name: "nginx"
   annotations: {}
   tls:
-    enabled: false
+    enabled: true
     certificateSecretName: jenny-certificate
+  host: yolo
 
 persistence:
   enabled: true

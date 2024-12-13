@@ -9,7 +9,7 @@ metadata:
     {{- if $.Values.commonLabels }}
     {{ toYaml $.Values.commonLabels | nindent 4 }}
     {{- end }}
-    app.kubernetes.io/component: jenny
+    app.kubernetes.io/part-of: {{ $.Chart.Name }}
   annotations:
 {{- if $.Values.commonAnnotations }}
 {{- toYaml $.Values.commonAnnotations | nindent 4 }}
@@ -22,7 +22,7 @@ spec:
       labels: {{- include "jenny.selectorLabels" $ | nindent 8 }}
         app.kubernetes.io/component: django
     spec:
-      {{- include "django.imagePullSecrets" $ | nindent 6 }}
+      {{- include "django.imagePullSecrets" $ | nindent 6 -}}
       containers:
         - name: django-{{ .name }}
           image: {{ $.Values.image.repository }}:{{ $.Values.image.tag }}
@@ -30,9 +30,6 @@ spec:
           env:
             {{- include "jenny.envs" $ | nindent 12 }}
           command: {{ .command | toJson }}
-          {{- if $.Values.resources }}
-          resources: {{ toYaml $.Values.resources | nindent 12 }}
-          {{- end }}
           volumeMounts:
             - name: {{ $.Values.volumes.media.name }}
               mountPath: {{ $.Values.volumes.media.mountPath }}

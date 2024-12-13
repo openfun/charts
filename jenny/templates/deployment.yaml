@@ -6,10 +6,15 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "jenny.labels" . | nindent 4 }}
+    {{- include "jenny.djangoSelectorLabels" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{ toYaml .Values.commonLabels | nindent 4 }}
+    {{- end }}
 spec:
   selector:
     matchLabels:
-      {{- include "jenny.selectorLabels" . | nindent 6 }}
+      {{- include "jenny.selectorLabels" . | nindent 6 -}}
+      {{- include "jenny.djangoSelectorLabels" . | nindent 6 }}
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
@@ -21,6 +26,7 @@ spec:
       {{- end }}
       labels:
         {{- include "jenny.selectorLabels" . | nindent 8 }}
+        {{- include "jenny.djangoSelectorLabels" . | nindent 8 }}
     spec:
       {{- include "django.imagePullSecrets" . | nindent 6 }}
       initContainers:
@@ -35,6 +41,8 @@ spec:
           volumeMounts:
             - name: "static"
               mountPath: /app/static
+          env:
+            {{- include "jenny.envs" . | nindent 12 }}
       containers:
         - name: "{{ .Chart.Name }}-django"
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -73,7 +81,6 @@ spec:
             {{- include "jenny.envs" . | nindent 12 }}
             - name: "UWSGI_PORT"
               value: "{{ .Values.django.port }}"
-          {{- if .Values.persistence.enabled }}
           volumeMounts:
             - name: static
               mountPath: /app/static
@@ -110,7 +117,6 @@ spec:
         - name: "static"
           emptyDir:
             sizeLimit: 50Mi
-      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
